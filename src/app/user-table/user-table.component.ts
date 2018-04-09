@@ -25,12 +25,11 @@ import { DataBaseService } from './../core/services/database.service';
 export class UserTableComponent implements OnInit {
   displayedColumns = ['id', 'account', 'firstName', 'lastName', 'alias'];
   dataSource: ExampleDataSource;
-  name;
   @ViewChild('filter') filter: ElementRef;
   @ViewChild('MatPaginator') paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
-  constructor(private dataBaseService: DataBaseService) {
+  constructor(private dataBaseService: DataBaseService<any>) {
   }
 
   onRowClicked(row) {
@@ -55,7 +54,7 @@ export class UserTableComponent implements OnInit {
   }
 
   add(firstName, lastName) {
-    this.dataBaseService.addUser({id: this.dataSource.length, account: 'yura_sakovich@smartexlab.com', firstName: firstName, lastName: lastName, alias: 'yura-sakovich' })
+    this.dataBaseService.addUser({id: this.dataSource.maxInd(), account: 'yura_sakovich@smartexlab.com', firstName: firstName, lastName: lastName, alias: 'yura-sakovich' })
   }
 
   remove() {
@@ -71,7 +70,7 @@ export class ExampleDataSource extends DataSource<any> {
   /** emits the filter value */
   _filterChange = new BehaviorSubject<string>('');
 
-  constructor(private _exampleDatabase: DataBaseService,
+  constructor(private _exampleDatabase: DataBaseService<any>,
     private _paginator: MatPaginator,
     private _sort: MatSort) {
     super();
@@ -83,6 +82,11 @@ export class ExampleDataSource extends DataSource<any> {
 
   set filter(filter: string) {
     this._filterChange.next(filter);
+  }
+
+  maxInd() {
+    let max = Math.max.apply(Math, this._exampleDatabase.data.map(function(o){return o.id;}))
+    return max + 1;
   }
 
   connect(): Observable<any[]> {
@@ -112,15 +116,15 @@ export class ExampleDataSource extends DataSource<any> {
   }
 
   
-  resetPaginator() {
+  resetPaginator(): any {
     return this._paginator.pageIndex = 0;
   }
 
-  getFreshData() {
+  getFreshData(): Array<any> {
     return this._exampleDatabase.data.slice();
   }
 
-  getFilteredData(data) {
+  getFilteredData(data): Array<any> {
     if (this.filter === '') {
       return data;
     }
@@ -130,12 +134,12 @@ export class ExampleDataSource extends DataSource<any> {
     });
   }
 
-  paginate(data: Array<any>) {
+  paginate(data: Array<any>): Array<any> {
     const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
     return data.splice(startIndex, this._paginator.pageSize);
   }
 
-  setLength(data) {
+  setLength(data): any {
     return this.length = data.length;
   }
 
@@ -172,7 +176,7 @@ export class ExampleDataSource extends DataSource<any> {
     });
   }
 
-  disconnect() {
+  disconnect(): void {
     this.disconnect$.next(true);
     this.disconnect$.complete();
   }

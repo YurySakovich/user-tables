@@ -14,7 +14,7 @@ import { ResponseContentType } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
 
 @Injectable()
-export class DataBaseService {
+export class DataBaseService<T> {
     private dataChange: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(UserArray);
 
     constructor(private http: Http) {
@@ -29,14 +29,14 @@ export class DataBaseService {
     }
 
     /** Adds a new user to the database. */
-    public addUser(user: any) {
+    public addUser(user: any): void {
         const copiedData = this.data.slice();
         copiedData.push(user);
         this.dataChange.next(copiedData);
     }
 
     /** Adds a new user to the database. */
-    public removeUser(id) {
+    public removeUser(id): void {
         const copiedData = this.data.slice().filter((el) => {
             if(el.id !== id)
             return el;
@@ -46,7 +46,7 @@ export class DataBaseService {
     }
 
     /** Builds and returns a new User. */
-    private createNewUser() {
+    private createNewUser(): Object {
         return { id: this.data.values, account: 'zinedin_zidan@smartexlab.com', firstName: 'Zinedin', lastName: 'Zidan', alias: 'zi-zu' };
     }
 }
