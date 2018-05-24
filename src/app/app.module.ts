@@ -13,6 +13,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CoreModule } from './core/core.module';
 
 @NgModule({
   declarations: [
@@ -21,14 +22,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
     MatTableModule,
     MatFormFieldModule,
     MatCheckboxModule,
     MatPaginatorModule,
     FormsModule,
     MatInputModule,
-    MatSortModule
+    MatSortModule,
+    CoreModule
   ],
   providers: [],
   bootstrap: [AppComponent]

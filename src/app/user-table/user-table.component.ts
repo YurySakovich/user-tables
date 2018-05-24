@@ -15,6 +15,7 @@ import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/takeUntil';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/do';
+import { DataBaseService } from './../core/services/database.service';
 
 @Component({
   selector: 'app-user-table',
@@ -22,21 +23,21 @@ import 'rxjs/add/operator/do';
   styleUrls: ['./user-table.component.css']
 })
 export class UserTableComponent implements OnInit {
-  displayedColumns = ['account', 'firstName', 'lastName', 'alias'];
-  exampleDatabase = new ExampleDatabase();
+  displayedColumns = ['id', 'account', 'firstName', 'lastName', 'alias'];
   dataSource: ExampleDataSource;
-  name;
-  length = 0;
   @ViewChild('filter') filter: ElementRef;
   @ViewChild('MatPaginator') paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
-  constructor() {
+  constructor(private dataBaseService: DataBaseService<any>) {
   }
 
+  onRowClicked(row) {
+    this.dataBaseService.removeUser(row.id);
+  }
 
   ngOnInit() {
-    this.dataSource = new ExampleDataSource(this.exampleDatabase, this.paginator, this.sort);
+    this.dataSource = new ExampleDataSource(this.dataBaseService, this.paginator, this.sort);
 
     Observable.fromEvent(this.filter.nativeElement, 'keyup')
       .debounceTime(150)
@@ -53,42 +54,10 @@ export class UserTableComponent implements OnInit {
   }
 
   add(firstName, lastName) {
-    this.exampleDatabase.addUser({ account: 'yura_sakovich@smartexlab.com', firstName: firstName, lastName: lastName, alias: 'yura-sakovich' })
+    this.dataBaseService.addUser({id: this.dataSource.maxInd(), account: 'yura_sakovich@smartexlab.com', firstName: firstName, lastName: lastName, alias: 'yura-sakovich' })
   }
 
   remove() {
-    this.exampleDatabase.removeUser();
-  }
-}
-
-export class ExampleDatabase {
-  /** Stream that emits whenever the data has been modified. */
-  dataChange: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(UserArray);
-
-  constructor() {
-  }
-
-  get data(): any[] {
-    return this.dataChange.value;
-  }
-
-  /** Adds a new user to the database. */
-  public addUser(user: any) {
-    const copiedData = this.data.slice();
-    copiedData.push(user);
-    this.dataChange.next(copiedData);
-  }
-
-  /** Adds a new user to the database. */
-  public removeUser() {
-    const copiedData = this.data.slice();
-    copiedData.shift();
-    this.dataChange.next(copiedData);
-  }
-
-  /** Builds and returns a new User. */
-  private createNewUser() {
-    return { account: 'zinedin_zidan@smartexlab.com', firstName: 'Zinedin', lastName: 'Zidan', alias: 'zi-zu' };
   }
 }
 
@@ -101,7 +70,7 @@ export class ExampleDataSource extends DataSource<any> {
   /** emits the filter value */
   _filterChange = new BehaviorSubject<string>('');
 
-  constructor(private _exampleDatabase: ExampleDatabase,
+  constructor(private _exampleDatabase: DataBaseService<any>,
     private _paginator: MatPaginator,
     private _sort: MatSort) {
     super();
@@ -115,10 +84,15 @@ export class ExampleDataSource extends DataSource<any> {
     this._filterChange.next(filter);
   }
 
+  maxInd() {
+    let max = Math.max.apply(Math, this._exampleDatabase.data.map(function(o){return o.id;}))
+    return max + 1;
+  }
+
   connect(): Observable<any[]> {
     /** Holder for everything that affects displayed rows.  */
     const displayDataChanges = [
-      this._exampleDatabase.dataChange,
+      this._exampleDatabase.getData,
       this._paginator.page,
       this._filterChange,
       this._sort.sortChange,
@@ -141,16 +115,16 @@ export class ExampleDataSource extends DataSource<any> {
       .map(data => this.paginate(data));
   }
 
-
-  resetPaginator() {
+  
+  resetPaginator(): any {
     return this._paginator.pageIndex = 0;
   }
 
-  getFreshData() {
+  getFreshData(): Array<any> {
     return this._exampleDatabase.data.slice();
   }
 
-  getFilteredData(data) {
+  getFilteredData(data): Array<any> {
     if (this.filter === '') {
       return data;
     }
@@ -160,12 +134,12 @@ export class ExampleDataSource extends DataSource<any> {
     });
   }
 
-  paginate(data: Array<any>) {
+  paginate(data: Array<any>): Array<any> {
     const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
     return data.splice(startIndex, this._paginator.pageSize);
   }
 
-  setLength(data) {
+  setLength(data): any {
     return this.length = data.length;
   }
 
@@ -190,6 +164,9 @@ export class ExampleDataSource extends DataSource<any> {
         case 'account':
           [propertyA, propertyB] = [a.account, b.account];
           break;
+        case 'id':
+          [propertyA, propertyB] = [a.account, b.account];
+          break;
       }
 
       const valueA = isNaN(+propertyA) ? propertyA : +propertyA;
@@ -199,7 +176,7 @@ export class ExampleDataSource extends DataSource<any> {
     });
   }
 
-  disconnect() {
+  disconnect(): void {
     this.disconnect$.next(true);
     this.disconnect$.complete();
   }

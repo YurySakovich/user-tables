@@ -8,6 +8,10 @@
     </mat-form-field>
   </div>
   <mat-table matSort [dataSource]="dataSource" class="example-table">
+    <ng-container matColumnDef="id">
+      <mat-header-cell matTooltip="Sort" *matHeaderCellDef mat-sort-header>Delete</mat-header-cell>
+      <mat-cell *matCellDef="let row; " (click)="onRowClicked(row)">{{row.id}}</mat-cell>
+    </ng-container>
     <ng-container matColumnDef="account">
       <mat-header-cell matTooltip="Sort" *matHeaderCellDef mat-sort-header>Account</mat-header-cell>
       <mat-cell *matCellDef="let row">{{row.account}}</mat-cell>
@@ -30,7 +34,7 @@
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
   </mat-table>
-  <mat-paginator #MatPaginator [length]="dataSource.length" [pageSize]="4">
+  <mat-paginator #MatPaginator [length]="dataSource?.length" [pageSize]="4">
   </mat-paginator>
 </div>
 
